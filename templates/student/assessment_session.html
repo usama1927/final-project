@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}{{ assessment.title }} | Assessment{% endblock %}
+{% block content %}
+<section>
+    <h1>{{ assessment.title }}</h1>
+    <p>{{ assessment.instructions }}</p>
+    <div class="audio-controls" role="group" aria-label="Audio controls">
+        <button data-audio-control="start" class="contrast">Start Recording</button>
+        <button data-audio-control="stop" class="secondary">Stop Recording</button>
+        <button data-audio-control="repeat">Repeat</button>
+        <button data-audio-control="next">Next</button>
+        <button data-audio-control="help">Help</button>
+    </div>
+    <p data-audio-status aria-live="assertive" class="muted mt-2">
+        Use the buttons or keyboard shortcuts for full audio navigation.
+    </p>
+</section>
+<section aria-labelledby="questions-heading">
+    <h2 id="questions-heading">Questions</h2>
+    {% for response, form in response_forms %}
+        <article class="assessment-card"
+                 data-asr-endpoint="{% url 'api-audio-upload' attempt.id response.question.id %}">
+            <h3>Question {{ forloop.counter }}</h3>
+            <p>{{ response.question.text }}</p>
+            <form method="post" aria-label="Answer question {{ forloop.counter }}">
+                {% csrf_token %}
+                <input type="hidden" name="question_id" value="{{ response.question.id }}">
+                <label>
+                    Spoken response (auto transcription optional)
+                    {{ form.transcription }}
+                </label>
+                <button type="submit" class="contrast">Submit Answer</button>
+            </form>
+            {% if response.feedback_text %}
+                <p><strong>Feedback:</strong> {{ response.feedback_text }}</p>
+            {% endif %}
+        </article>
+    {% empty %}
+        <p>No questions found.</p>
+    {% endfor %}
+</section>
+{% endblock %}
+

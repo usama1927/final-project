@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Teacher Dashboard{% endblock %}
+{% block content %}
+<section>
+    <h1>Teacher Dashboard</h1>
+    <a class="contrast" href="{% url 'assessment-create' %}">Create Assessment</a>
+</section>
+<section>
+    <h2>Your Assessments</h2>
+    {% for assessment in assessments %}
+        <article class="assessment-card">
+            <h3>{{ assessment.title }}</h3>
+            <p>{{ assessment.subject }} • {{ assessment.questions.count }} questions</p>
+            <a href="{% url 'assessment-results' assessment.pk %}">View Results</a>
+        </article>
+    {% empty %}
+        <p>No assessments yet.</p>
+    {% endfor %}
+</section>
+<section>
+    <h2>Recent Attempts</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>Student</th>
+            <th>Assessment</th>
+            <th>Status</th>
+            <th>Score</th>
+            <th>WER</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for attempt in attempts %}
+            <tr>
+                <td>{{ attempt.student.username }}</td>
+                <td>{{ attempt.assessment.title }}</td>
+                <td>{{ attempt.get_status_display }}</td>
+                <td>{{ attempt.overall_score|default:"—" }}</td>
+                <td>{{ attempt.overall_wer|default:"—" }}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="5">No attempts yet.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}
+

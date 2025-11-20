@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}{{ assessment.title }} Results{% endblock %}
+{% block content %}
+<section>
+    <h1>{{ assessment.title }} — Results</h1>
+    <p>{{ assessment.subject }} | {{ assessment.questions.count }} questions</p>
+</section>
+<section>
+    <table>
+        <thead>
+        <tr>
+            <th>Student</th>
+            <th>Status</th>
+            <th>Score</th>
+            <th>WER</th>
+            <th>Feedback</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for attempt in attempts %}
+            <tr>
+                <td>{{ attempt.student.username }}</td>
+                <td>{{ attempt.get_status_display }}</td>
+                <td>{{ attempt.overall_score|default:"—" }}</td>
+                <td>{{ attempt.overall_wer|default:"—" }}</td>
+                <td>
+                    <details>
+                        <summary>View</summary>
+                        <ul>
+                            {% for response in attempt.responses.all %}
+                                <li>
+                                    <strong>Q{{ forloop.counter }}:</strong>
+                                    {{ response.feedback_text|default:"No feedback yet" }}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </details>
+                </td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="5">No attempts available.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}
+

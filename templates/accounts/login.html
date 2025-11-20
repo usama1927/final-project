@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Login | ASR{% endblock %}
+{% block content %}
+<section aria-labelledby="login-heading">
+    <h1 id="login-heading">Welcome to the Voice Assessment Portal</h1>
+    <p class="muted" aria-live="polite">
+        Use the form below to sign in. Every element supports keyboard and screen reader navigation.
+    </p>
+    <form method="post" novalidate aria-describedby="login-help">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        <label>
+            Username
+            {{ form.username }}
+        </label>
+        <label>
+            Password
+            {{ form.password }}
+        </label>
+        <small id="login-help">
+            Tabbing order is optimized. Press Alt + / to repeat audio guidance.
+        </small>
+        <button type="submit" class="contrast">Sign In</button>
+    </form>
+</section>
+{% endblock %}
+

@@ -1,0 +1,44 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ASR Platform{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body data-theme="dark">
+<header class="container">
+    <nav>
+        <ul>
+            <li><strong>Voice Assessment</strong></li>
+        </ul>
+        <ul>
+            {% if user.is_authenticated %}
+                <li><a href="{{ user.dashboard_url }}" class="contrast">Dashboard</a></li>
+                <li><a href="{% url 'logout' %}" aria-label="Log out">Logout</a></li>
+            {% else %}
+                <li><a href="{% url 'login' %}">Login</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+</header>
+<main class="container" tabindex="-1">
+    {% if messages %}
+        <section aria-live="polite">
+            {% for message in messages %}
+                <p class="notice {{ message.tags }}">{{ message }}</p>
+            {% endfor %}
+        </section>
+    {% endif %}
+    {% block content %}{% endblock %}
+</main>
+<footer class="container">
+    <small>WCAG 2.1 AA compliant | Audio-first interactions</small>
+</footer>
+<script src="{% static 'js/audio.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>
+

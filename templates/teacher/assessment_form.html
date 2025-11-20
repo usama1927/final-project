@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Create Assessment{% endblock %}
+{% block content %}
+<section>
+    <h1>Create Assessment</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <h2>Questions</h2>
+        {{ formset.management_form }}
+        {% for question_form in formset %}
+            <fieldset>
+                <legend>Question {{ forloop.counter }}</legend>
+                {{ question_form.as_p }}
+            </fieldset>
+        {% endfor %}
+        <button type="submit" class="contrast">Save</button>
+    </form>
+</section>
+{% endblock %}
+

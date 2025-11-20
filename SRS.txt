@@ -1,0 +1,519 @@
+---
+
+Software Requirements Specification (SRS)
+
+Automatic Voice-Based Assessment System for Visually Impaired Learners
+
+Using Django Backend + Django Templates Frontend
+
+
+---
+
+1. Introduction
+
+1.1 Purpose
+
+This Software Requirements Specification (SRS) defines the functional, non-functional, technical, and system requirements for an AI-powered, voice-based assessment platform designed for visually impaired learners.
+
+The system enables students to complete academic assessments using their voice while receiving real-time transcription, scoring, and feedback.
+
+The backend is developed in Django, and the frontend uses Django Templates, ensuring accessibility, security, and compatibility across devices.
+
+
+---
+
+1.2 Scope
+
+The system provides:
+
+Voice-based question delivery
+
+Speech-to-text transcription via ASR (Whisper or Wav2Vec2)
+
+NLP-based answer evaluation (BERT models)
+
+LLM-generated structured feedback
+
+Accessible UI designed for visually impaired users
+
+Admin panel for teachers to upload questions, view results, and generate reports
+
+
+The system supports:
+
+Audio navigation
+
+Minimal visual dependency
+
+WCAG 2.1 AA accessibility compliance
+
+
+
+---
+
+1.3 Definitions, Acronyms, Abbreviations
+
+ASR – Automatic Speech Recognition
+
+LLM – Large Language Model
+
+UCD – User-Centered Design
+
+VI Users – Visually Impaired Learners
+
+WCAG – Web Content Accessibility Guidelines
+
+
+
+---
+
+1.4 References
+
+Derived from your provided papers:
+
+
+
+
+---
+
+2. Overall Description
+
+2.1 Product Perspective
+
+The system is a standalone web application with three major layers:
+
+Backend (Django)
+
+APIs for ASR and NLP processing
+
+Assessment logic
+
+User authentication
+
+Teacher dashboard
+
+Data storage & analytics
+
+
+Frontend (Django Templates)
+
+Voice-first interface
+
+Accessible, minimalistic UI
+
+Audio prompts and controls
+
+
+AI Processing Layer
+
+Integrated ASR engine (Whisper or fine-tuned Wav2Vec2)
+
+NLP scoring engine (BERT-based)
+
+LLM feedback engine (GPT-based with rubric prompts)
+
+
+
+---
+
+2.2 User Classes
+
+User Type	Permissions
+
+Student (Visually Impaired)	Start assessments, speak answers, hear feedback
+Teacher/Admin	Create assessments, view analytics, manage students
+System	ASR, scoring, feedback, logging
+
+
+
+---
+
+2.3 User Needs
+
+Ability to take assessments independently
+
+Accurate speech recognition with diverse accents
+
+Clear, reliable audio feedback
+
+Fully accessible interface
+
+Teachers need robust scoring + analytics
+
+
+
+---
+
+2.4 Assumptions & Dependencies
+
+Stable internet for ASR/LLM API calls
+
+Microphone access
+
+Whisper/Wav2Vec2 model availability
+
+Django server + PostgreSQL database
+
+
+
+---
+
+3. System Features (Functional Requirements)
+
+3.1 User Authentication
+
+FR-1: The system must allow user login via username + password.
+FR-2: Each user is assigned a role (Student / Teacher).
+FR-3: Teachers have admin access through Django Admin.
+
+
+---
+
+3.2 Assessment Management (Teacher Dashboard)
+
+FR-4: Teachers can create assessments with:
+
+Title
+
+Subject
+
+Questions (text or audio)
+
+Rubrics
+
+
+FR-5: Teachers can view student's attempts, scores, WER, and feedback.
+FR-6: Teachers can download CSV/PDF summaries.
+
+
+---
+
+3.3 Voice-Based Assessment Interface (Student)
+
+Assessment Flow
+
+1. System reads the question aloud.
+
+
+2. User speaks the answer.
+
+
+3. ASR transcribes the answer.
+
+
+4. NLP evaluates semantic correctness.
+
+
+5. LLM generates feedback.
+
+
+6. System plays audio feedback.
+
+
+
+FR-7: Student must be able to start/stop recording.
+FR-8: System must provide audio navigation commands:
+
+“Repeat”
+
+“Go back”
+
+“Next question”
+
+“Help”
+
+
+FR-9: ASR must transcribe answers in real time.
+FR-10: System must display transcription (optional toggle).
+
+
+---
+
+3.4 ASR Processing
+
+FR-11: System supports Whisper OR Wav2Vec2 as ASR backend.
+FR-12: Fine-tuned models must be used if available.
+FR-13: System must compute word error rate (WER) per attempt.
+
+
+---
+
+3.5 Automated Scoring & NLP Processing
+
+FR-14: NLP engine evaluates:
+
+Semantic similarity
+
+Coverage of expected concepts
+
+Coherence
+
+
+FR-15: Scores range from 0–100.
+FR-16: Scoring must use rubric-based evaluation prompts for consistency.
+
+
+---
+
+3.6 Feedback Generation
+
+FR-17: Feedback must be LLM-generated using structured prompts.
+FR-18: Feedback must be converted to audio via TTS.
+FR-19: Feedback must be stored in the database for teacher review.
+
+
+---
+
+3.7 Accessibility Features
+
+FR-20: UI must follow WCAG 2.1 AA.
+FR-21: System must support complete audio navigation.
+FR-22: Keyboard-only mode must be available.
+FR-23: Pages must be fully screen-reader compatible.
+
+
+---
+
+3.8 System Logging
+
+FR-24: Log WER, scoring, model version, latency, and errors.
+FR-25: All logs must be visible to admin only.
+
+
+---
+
+4. Non-Functional Requirements (NFR)
+
+4.1 Performance
+
+ASR response < 2 seconds
+
+LLM feedback < 4 seconds
+
+System supports 200 concurrent users
+
+
+
+---
+
+4.2 Security
+
+JWT-based session handling
+
+End-to-end encrypted audio uploads
+
+GDPR-compliant storage
+
+Role-based access control
+
+Voice data must never be shared without consent
+
+
+
+---
+
+4.3 Usability
+
+Every action must have an audio equivalent
+
+Simple two-button UI: Record and Next
+
+Large, high-contrast controls
+
+
+
+---
+
+4.4 Reliability
+
+System uptime ≥ 99%
+
+Fail-safe mechanism:
+
+If ASR fails → ask student to repeat
+
+If NLP fails → perform fallback rule-based scoring
+
+
+
+
+---
+
+5. System Architecture (High-Level)
+
+[User Interface - Django Templates]
+        |
+        v
+[Django Views / Controllers]
+        |
+        v
+[AI Processing Layer]
+  - ASR Engine (Whisper / Wav2Vec2)
+  - NLP Scoring Engine (BERT)
+  - Feedback Engine (LLM)
+        |
+        v
+[PostgreSQL Database]
+
+
+---
+
+6. Database Requirements
+
+Tables:
+
+Users
+
+id
+
+username
+
+password
+
+role
+
+profile info
+
+
+Assessments
+
+id
+
+teacher_id
+
+title
+
+subject
+
+created_at
+
+
+Questions
+
+assessment_id
+
+text
+
+expected_answer
+
+rubric
+
+
+Attempts
+
+student_id
+
+assessment_id
+
+timestamp
+
+
+Responses
+
+attempt_id
+
+question_id
+
+transcription
+
+score
+
+feedback
+
+wer
+
+
+
+---
+
+7. Interface Requirements
+
+7.1 Frontend (Django Templates)
+
+Pages:
+
+1. /login
+
+
+2. /student/dashboard
+
+
+3. /student/assessment/<id>
+
+
+4. /teacher/dashboard
+
+
+5. /teacher/assessment/create
+
+
+6. /teacher/assessment/results
+
+
+
+All templates must:
+
+support screen readers
+
+have hidden text replaced with aria-labels
+
+avoid complex visuals
+
+prioritize audio output
+
+
+
+---
+
+8. External Integrations
+
+DeepSpeech/Whisper API or local model
+
+HuggingFace Transformers (BERT, Wav2Vec2)
+
+OpenAI / Local LLM for feedback
+
+gTTS or Azure TTS for audio feedback
+
+
+
+---
+
+9. Constraints
+
+Must run on Django 4.2+
+
+Must run on Python 3.10+
+
+Deployable on Heroku, AWS, or DigitalOcean
+
+ASR models require GPU for real-time inference
+
+
+
+---
+
+10. Future Enhancements
+
+Real-time ASR subtitles
+
+Offline mode using on-device ASR
+
+Adaptive learning analytics
+
+Student progress predictions
+
+
+
+---
+
+DONE 🎉
+
+If you want, I can also generate:
+
+✅ UML Diagrams
+✅ ERD (Database Diagram)
+✅ Django project folder structure
+✅ Wireframes (accessible UI)
+✅ Detailed API endpoints
+✅ Rubric-based LLM prompt templates

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Student Dashboard{% endblock %}
+{% block content %}
+<section aria-labelledby="available-assessments">
+    <h1 id="available-assessments">Available Assessments</h1>
+    {% for assessment in assessments %}
+        <article class="assessment-card">
+            <h2>{{ assessment.title }}</h2>
+            <p>{{ assessment.subject }} • {{ assessment.language|upper }}</p>
+            <p>{{ assessment.instructions|default:"No instructions provided." }}</p>
+            <footer>
+                <a class="secondary"
+                   href="{% url 'student-assessment' assessment.pk %}"
+                   aria-label="Start {{ assessment.title }}">
+                    Start / Continue
+                </a>
+            </footer>
+        </article>
+    {% empty %}
+        <p>No assessments available at this time.</p>
+    {% endfor %}
+</section>
+{% endblock %}
+
