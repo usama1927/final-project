@@ -2,19 +2,106 @@
 {% block title %}Create Assessment{% endblock %}
 {% block content %}
 <section>
-    <h1>Create Assessment</h1>
+    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md);">
+            <i class="fas fa-plus-circle" style="font-size: 1.75rem; color: white;"></i>
+        </div>
+        <div>
+            <h1 style="margin: 0;">Create Assessment</h1>
+            <p class="muted" style="margin: 0.25rem 0 0;">Build a new voice-based assessment for your students</p>
+        </div>
+    </div>
+    
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        {{ form.as_p }}
-        <h2>Questions</h2>
-        {{ formset.management_form }}
-        {% for question_form in formset %}
-            <fieldset>
-                <legend>Question {{ forloop.counter }}</legend>
-                {{ question_form.as_p }}
-            </fieldset>
-        {% endfor %}
-        <button type="submit" class="contrast">Save</button>
+        
+        <div style="margin-bottom: 2rem;">
+            <h2 style="margin-bottom: 1.5rem;">
+                <i class="fas fa-info-circle" aria-hidden="true" style="margin-right: 0.5rem;"></i>
+                Assessment Details
+            </h2>
+            {% for field in form %}
+                {% if field.name != 'questions' %}
+                    <label>
+                        {% if field.name == 'title' %}
+                            <i class="fas fa-heading" aria-hidden="true" style="margin-right: 0.5rem;"></i>
+                        {% elif field.name == 'subject' %}
+                            <i class="fas fa-book" aria-hidden="true" style="margin-right: 0.5rem;"></i>
+                        {% elif field.name == 'instructions' %}
+                            <i class="fas fa-file-alt" aria-hidden="true" style="margin-right: 0.5rem;"></i>
+                        {% elif field.name == 'language' %}
+                            <i class="fas fa-language" aria-hidden="true" style="margin-right: 0.5rem;"></i>
+                        {% endif %}
+                        {{ field.label }}
+                        {% if field.field.required %}<span style="color: var(--error);">*</span>{% endif %}
+                        {{ field }}
+                        {% if field.help_text %}
+                            <small class="muted">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% if field.errors %}
+                            <div class="notice error" style="margin-top: 0.5rem;">
+                                <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+                                <span>{{ field.errors }}</span>
+                            </div>
+                        {% endif %}
+                    </label>
+                {% endif %}
+            {% endfor %}
+        </div>
+        
+        <div style="margin-bottom: 2rem;">
+            <h2 style="margin-bottom: 1.5rem;">
+                <i class="fas fa-question-circle" aria-hidden="true" style="margin-right: 0.5rem;"></i>
+                Questions
+            </h2>
+            {{ formset.management_form }}
+            {% for question_form in formset %}
+                <fieldset style="margin-bottom: 2rem;">
+                    <legend style="display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-list-ol" aria-hidden="true"></i>
+                        Question {{ forloop.counter }}
+                    </legend>
+                    {% for field in question_form %}
+                        {% if field.name != 'DELETE' and field.name != 'id' %}
+                            <label>
+                                {% if field.name == 'text' %}
+                                    <i class="fas fa-quote-left" aria-hidden="true" style="margin-right: 0.5rem;"></i>
+                                {% elif field.name == 'expected_answer' %}
+                                    <i class="fas fa-check-circle" aria-hidden="true" style="margin-right: 0.5rem;"></i>
+                                {% elif field.name == 'rubric' %}
+                                    <i class="fas fa-clipboard-check" aria-hidden="true" style="margin-right: 0.5rem;"></i>
+                                {% endif %}
+                                {{ field.label }}
+                                {% if field.field.required %}<span style="color: var(--error);">*</span>{% endif %}
+                                {{ field }}
+                                {% if field.help_text %}
+                                    <small class="muted">{{ field.help_text }}</small>
+                                {% endif %}
+                                {% if field.errors %}
+                                    <div class="notice error" style="margin-top: 0.5rem;">
+                                        <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+                                        <span>{{ field.errors }}</span>
+                                    </div>
+                                {% endif %}
+                            </label>
+                        {% else %}
+                            {{ field }}
+                        {% endif %}
+                    {% endfor %}
+                </fieldset>
+            {% endfor %}
+        </div>
+        
+        <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+            <a href="{% url 'teacher-dashboard' %}" class="secondary" style="text-decoration: none;">
+                <i class="fas fa-times" aria-hidden="true"></i>
+                <span>Cancel</span>
+            </a>
+            <button type="submit" class="contrast">
+                <i class="fas fa-save" aria-hidden="true"></i>
+                <span>Save Assessment</span>
+            </button>
+        </div>
     </form>
 </section>
 {% endblock %}

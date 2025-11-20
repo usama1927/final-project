@@ -1,26 +1,42 @@
 {% extends "base.html" %}
 {% block title %}Login | ASR{% endblock %}
 {% block content %}
-<section aria-labelledby="login-heading">
-    <h1 id="login-heading">Welcome to the Voice Assessment Portal</h1>
-    <p class="muted" aria-live="polite">
-        Use the form below to sign in. Every element supports keyboard and screen reader navigation.
-    </p>
+<section aria-labelledby="login-heading" style="max-width: 500px; margin: 4rem auto;">
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <div style="width: 80px; height: 80px; margin: 0 auto 1.5rem; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-lg);">
+            <i class="fas fa-microphone-alt" style="font-size: 2.5rem; color: white;"></i>
+        </div>
+        <h1 id="login-heading">Welcome Back</h1>
+        <p class="muted" aria-live="polite">
+            Sign in to access your voice-based assessments
+        </p>
+    </div>
     <form method="post" novalidate aria-describedby="login-help">
         {% csrf_token %}
-        {{ form.non_field_errors }}
+        {% if form.non_field_errors %}
+            <div class="notice error">
+                <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+                <span>{{ form.non_field_errors }}</span>
+            </div>
+        {% endif %}
         <label>
+            <i class="fas fa-user" aria-hidden="true" style="margin-right: 0.5rem;"></i>
             Username
             {{ form.username }}
         </label>
         <label>
+            <i class="fas fa-lock" aria-hidden="true" style="margin-right: 0.5rem;"></i>
             Password
             {{ form.password }}
         </label>
-        <small id="login-help">
+        <small id="login-help" class="muted" style="display: block; margin-bottom: 1.5rem;">
+            <i class="fas fa-info-circle" aria-hidden="true"></i>
             Tabbing order is optimized. Press Alt + / to repeat audio guidance.
         </small>
-        <button type="submit" class="contrast">Sign In</button>
+        <button type="submit" class="contrast" style="width: 100%;">
+            <i class="fas fa-sign-in-alt" aria-hidden="true"></i>
+            <span>Sign In</span>
+        </button>
     </form>
 </section>
 {% endblock %}

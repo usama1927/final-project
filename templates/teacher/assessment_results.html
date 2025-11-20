@@ -1,47 +1,158 @@
 {% extends "base.html" %}
 {% block title %}{{ assessment.title }} Results{% endblock %}
 {% block content %}
-<section>
-    <h1>{{ assessment.title }} — Results</h1>
-    <p>{{ assessment.subject }} | {{ assessment.questions.count }} questions</p>
+<section style="margin-bottom: 2.5rem;">
+    <div style="display: flex; align-items: start; gap: 1.5rem; margin-bottom: 2rem; flex-wrap: wrap;">
+        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md); flex-shrink: 0;">
+            <i class="fas fa-chart-line" style="font-size: 1.75rem; color: white;"></i>
+        </div>
+        <div style="flex: 1;">
+            <h1 style="margin: 0 0 0.5rem;">{{ assessment.title }}</h1>
+            <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                <span style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--text-muted);">
+                    <i class="fas fa-book" aria-hidden="true"></i>
+                    {{ assessment.subject }}
+                </span>
+                <span style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--text-muted);">
+                    <i class="fas fa-question-circle" aria-hidden="true"></i>
+                    {{ assessment.questions.count }} question{{ assessment.questions.count|pluralize }}
+                </span>
+                <span style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--text-muted);">
+                    <i class="fas fa-users" aria-hidden="true"></i>
+                    {{ attempts|length }} attempt{{ attempts|length|pluralize }}
+                </span>
+            </div>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <a href="{% url 'teacher-dashboard' %}" class="secondary" style="text-decoration: none;">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                    <span>Back to Dashboard</span>
+                </a>
+            </div>
+        </div>
+    </div>
 </section>
+
+{% if attempts %}
 <section>
-    <table>
-        <thead>
-        <tr>
-            <th>Student</th>
-            <th>Status</th>
-            <th>Score</th>
-            <th>WER</th>
-            <th>Feedback</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for attempt in attempts %}
+    <h2 style="margin-bottom: 1.5rem;">
+        <i class="fas fa-table" aria-hidden="true" style="margin-right: 0.5rem;"></i>
+        Student Results
+    </h2>
+    <div style="overflow-x: auto;">
+        <table>
+            <thead>
             <tr>
-                <td>{{ attempt.student.username }}</td>
-                <td>{{ attempt.get_status_display }}</td>
-                <td>{{ attempt.overall_score|default:"—" }}</td>
-                <td>{{ attempt.overall_wer|default:"—" }}</td>
-                <td>
-                    <details>
-                        <summary>View</summary>
-                        <ul>
-                            {% for response in attempt.responses.all %}
-                                <li>
-                                    <strong>Q{{ forloop.counter }}:</strong>
-                                    {{ response.feedback_text|default:"No feedback yet" }}
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    </details>
-                </td>
+                <th><i class="fas fa-user" aria-hidden="true" style="margin-right: 0.5rem;"></i>Student</th>
+                <th><i class="fas fa-info-circle" aria-hidden="true" style="margin-right: 0.5rem;"></i>Status</th>
+                <th><i class="fas fa-star" aria-hidden="true" style="margin-right: 0.5rem;"></i>Score</th>
+                <th><i class="fas fa-percentage" aria-hidden="true" style="margin-right: 0.5rem;"></i>WER</th>
+                <th><i class="fas fa-comments" aria-hidden="true" style="margin-right: 0.5rem;"></i>Feedback</th>
             </tr>
-        {% empty %}
-            <tr><td colspan="5">No attempts available.</td></tr>
-        {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+            {% for attempt in attempts %}
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <div style="width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
+                                {{ attempt.student.username|first|upper }}
+                            </div>
+                            <span style="font-weight: 500;">{{ attempt.student.username }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="status-badge {% if attempt.status == 'completed' %}completed{% elif attempt.status == 'in_progress' %}in-progress{% else %}pending{% endif %}">
+                            {% if attempt.status == 'completed' %}
+                                <i class="fas fa-check-circle" aria-hidden="true"></i>
+                            {% elif attempt.status == 'in_progress' %}
+                                <i class="fas fa-spinner" aria-hidden="true"></i>
+                            {% else %}
+                                <i class="fas fa-clock" aria-hidden="true"></i>
+                            {% endif %}
+                            {{ attempt.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if attempt.overall_score is not None %}
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <strong style="color: var(--success); font-size: 1.1rem;">{{ attempt.overall_score|floatformat:1 }}%</strong>
+                                <div style="width: 60px; height: 6px; background: var(--bg-tertiary); border-radius: 3px; overflow: hidden;">
+                                    <div style="width: {{ attempt.overall_score }}%; height: 100%; background: linear-gradient(90deg, var(--success) 0%, #059669 100%);"></div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <span class="muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if attempt.overall_wer is not None %}
+                            <span>{{ attempt.overall_wer|floatformat:2 }}%</span>
+                        {% else %}
+                            <span class="muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <details>
+                            <summary style="cursor: pointer; color: var(--primary); font-weight: 500;">
+                                <i class="fas fa-eye" aria-hidden="true" style="margin-right: 0.5rem;"></i>
+                                View Details
+                            </summary>
+                            <div style="margin-top: 1rem; padding: 1rem; background: var(--bg-secondary); border-radius: var(--border-radius);">
+                                {% for response in attempt.responses.all %}
+                                    <div style="margin-bottom: 1rem; padding-bottom: 1rem; {% if not forloop.last %}border-bottom: 1px solid var(--border-color);{% endif %}">
+                                        <div style="display: flex; align-items: start; gap: 0.75rem; margin-bottom: 0.5rem;">
+                                            <span style="width: 32px; height: 32px; background: var(--primary); color: white; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">
+                                                Q{{ forloop.counter }}
+                                            </span>
+                                            <div style="flex: 1;">
+                                                <strong style="display: block; margin-bottom: 0.25rem; color: var(--text-primary);">Question {{ forloop.counter }}</strong>
+                                                <p style="color: var(--text-secondary); margin: 0.5rem 0; line-height: 1.6;">{{ response.question.text|truncatewords:20 }}</p>
+                                                {% if response.transcription %}
+                                                    <p style="color: var(--text-muted); font-size: 0.875rem; margin: 0.5rem 0; font-style: italic;">
+                                                        <i class="fas fa-quote-left" aria-hidden="true" style="margin-right: 0.25rem;"></i>
+                                                        "{{ response.transcription|truncatewords:15 }}"
+                                                    </p>
+                                                {% endif %}
+                                                {% if response.feedback_text %}
+                                                    <div style="margin-top: 0.75rem; padding: 0.75rem; background: rgba(59, 130, 246, 0.1); border-left: 3px solid var(--info); border-radius: 6px;">
+                                                        <strong style="display: block; margin-bottom: 0.25rem; color: var(--info); font-size: 0.875rem;">
+                                                            <i class="fas fa-comment-dots" aria-hidden="true" style="margin-right: 0.25rem;"></i>
+                                                            Feedback
+                                                            {% if response.score is not None %}
+                                                                <span style="margin-left: 0.5rem; color: var(--success);">({{ response.score|floatformat:1 }}%)</span>
+                                                            {% endif %}
+                                                        </strong>
+                                                        <p style="color: var(--text-secondary); margin: 0; font-size: 0.875rem; line-height: 1.5;">{{ response.feedback_text }}</p>
+                                                    </div>
+                                                {% else %}
+                                                    <p style="color: var(--text-muted); font-size: 0.875rem; margin-top: 0.5rem;">
+                                                        <i class="fas fa-clock" aria-hidden="true" style="margin-right: 0.25rem;"></i>
+                                                        No feedback yet
+                                                    </p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% empty %}
+                                    <p class="muted">No responses recorded yet.</p>
+                                {% endfor %}
+                            </div>
+                        </details>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </section>
+{% else %}
+<section>
+    <div style="text-align: center; padding: 4rem 2rem; background: var(--bg-card); border-radius: var(--border-radius-lg); border: 1px solid var(--border-color);">
+        <i class="fas fa-inbox" style="font-size: 4rem; color: var(--text-muted); margin-bottom: 1.5rem; opacity: 0.5;"></i>
+        <h2 style="color: var(--text-secondary); margin-bottom: 0.5rem;">No Attempts Available</h2>
+        <p class="muted">Students haven't started this assessment yet.</p>
+    </div>
+</section>
+{% endif %}
 {% endblock %}
 

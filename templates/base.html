@@ -5,21 +5,41 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}ASR Platform{% endblock %}</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="{% static 'css/app.css' %}">
 </head>
-<body data-theme="dark">
+<body>
 <header class="container">
     <nav>
         <ul>
-            <li><strong>Voice Assessment</strong></li>
+            <li>
+                <strong>
+                    <i class="fas fa-microphone-alt" aria-hidden="true"></i>
+                    Voice Assessment Platform
+                </strong>
+            </li>
         </ul>
         <ul>
             {% if user.is_authenticated %}
-                <li><a href="{{ user.dashboard_url }}" class="contrast">Dashboard</a></li>
-                <li><a href="{% url 'logout' %}" aria-label="Log out">Logout</a></li>
+                <li>
+                    <a href="{{ user.dashboard_url }}">
+                        <i class="fas fa-tachometer-alt" aria-hidden="true"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'logout' %}" aria-label="Log out">
+                        <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+                        <span>Logout</span>
+                    </a>
+                </li>
             {% else %}
-                <li><a href="{% url 'login' %}">Login</a></li>
+                <li>
+                    <a href="{% url 'login' %}">
+                        <i class="fas fa-sign-in-alt" aria-hidden="true"></i>
+                        <span>Login</span>
+                    </a>
+                </li>
             {% endif %}
         </ul>
     </nav>
@@ -28,14 +48,28 @@
     {% if messages %}
         <section aria-live="polite">
             {% for message in messages %}
-                <p class="notice {{ message.tags }}">{{ message }}</p>
+                <div class="notice {{ message.tags }}">
+                    {% if message.tags == 'success' %}
+                        <i class="fas fa-check-circle" aria-hidden="true"></i>
+                    {% elif message.tags == 'error' %}
+                        <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+                    {% elif message.tags == 'warning' %}
+                        <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                    {% else %}
+                        <i class="fas fa-info-circle" aria-hidden="true"></i>
+                    {% endif %}
+                    <span>{{ message }}</span>
+                </div>
             {% endfor %}
         </section>
     {% endif %}
     {% block content %}{% endblock %}
 </main>
 <footer class="container">
-    <small>WCAG 2.1 AA compliant | Audio-first interactions</small>
+    <small>
+        <i class="fas fa-universal-access" aria-hidden="true"></i>
+        WCAG 2.1 AA compliant | Audio-first interactions
+    </small>
 </footer>
 <script src="{% static 'js/audio.js' %}"></script>
 {% block extra_js %}{% endblock %}

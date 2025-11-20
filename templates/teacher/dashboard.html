@@ -2,47 +2,141 @@
 {% block title %}Teacher Dashboard{% endblock %}
 {% block content %}
 <section>
-    <h1>Teacher Dashboard</h1>
-    <a class="contrast" href="{% url 'assessment-create' %}">Create Assessment</a>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <div style="width: 60px; height: 60px; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md);">
+                <i class="fas fa-chalkboard-teacher" style="font-size: 1.75rem; color: white;"></i>
+            </div>
+            <div>
+                <h1 style="margin: 0;">Teacher Dashboard</h1>
+                <p class="muted" style="margin: 0.25rem 0 0;">Manage assessments and view results</p>
+            </div>
+        </div>
+        <a class="contrast" href="{% url 'assessment-create' %}">
+            <i class="fas fa-plus-circle" aria-hidden="true"></i>
+            <span>Create Assessment</span>
+        </a>
+    </div>
 </section>
+
+{% if assessments %}
 <section>
-    <h2>Your Assessments</h2>
-    {% for assessment in assessments %}
-        <article class="assessment-card">
-            <h3>{{ assessment.title }}</h3>
-            <p>{{ assessment.subject }} • {{ assessment.questions.count }} questions</p>
-            <a href="{% url 'assessment-results' assessment.pk %}">View Results</a>
-        </article>
-    {% empty %}
-        <p>No assessments yet.</p>
-    {% endfor %}
-</section>
-<section>
-    <h2>Recent Attempts</h2>
-    <table>
-        <thead>
-        <tr>
-            <th>Student</th>
-            <th>Assessment</th>
-            <th>Status</th>
-            <th>Score</th>
-            <th>WER</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for attempt in attempts %}
-            <tr>
-                <td>{{ attempt.student.username }}</td>
-                <td>{{ attempt.assessment.title }}</td>
-                <td>{{ attempt.get_status_display }}</td>
-                <td>{{ attempt.overall_score|default:"—" }}</td>
-                <td>{{ attempt.overall_wer|default:"—" }}</td>
-            </tr>
-        {% empty %}
-            <tr><td colspan="5">No attempts yet.</td></tr>
+    <h2>
+        <i class="fas fa-clipboard-list" aria-hidden="true" style="margin-right: 0.5rem;"></i>
+        Your Assessments
+    </h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
+        {% for assessment in assessments %}
+            <article class="assessment-card">
+                <div style="display: flex; align-items: start; gap: 1rem;">
+                    <div style="width: 48px; height: 48px; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i class="fas fa-file-alt" style="color: white; font-size: 1.25rem;"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <h3 style="margin: 0 0 0.5rem;">{{ assessment.title }}</h3>
+                        <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                            <span style="display: inline-flex; align-items: center; gap: 0.375rem; color: var(--text-muted); font-size: 0.875rem;">
+                                <i class="fas fa-book" aria-hidden="true"></i>
+                                {{ assessment.subject }}
+                            </span>
+                            <span style="display: inline-flex; align-items: center; gap: 0.375rem; color: var(--text-muted); font-size: 0.875rem;">
+                                <i class="fas fa-question-circle" aria-hidden="true"></i>
+                                {{ assessment.questions.count }} questions
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <footer style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+                    <a class="secondary" href="{% url 'assessment-results' assessment.pk %}" style="width: 100%; justify-content: center;">
+                        <i class="fas fa-chart-line" aria-hidden="true"></i>
+                        <span>View Results</span>
+                    </a>
+                </footer>
+            </article>
         {% endfor %}
-        </tbody>
-    </table>
+    </div>
 </section>
+{% else %}
+<section>
+    <div style="text-align: center; padding: 3rem 2rem; background: var(--bg-card); border-radius: var(--border-radius-lg); border: 1px solid var(--border-color); margin-bottom: 2.5rem;">
+        <i class="fas fa-clipboard-list" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem; opacity: 0.5;"></i>
+        <h2 style="color: var(--text-secondary); margin-bottom: 0.5rem;">No Assessments Yet</h2>
+        <p class="muted" style="margin-bottom: 1.5rem;">Create your first assessment to get started.</p>
+        <a class="contrast" href="{% url 'assessment-create' %}">
+            <i class="fas fa-plus-circle" aria-hidden="true"></i>
+            <span>Create Assessment</span>
+        </a>
+    </div>
+</section>
+{% endif %}
+
+{% if attempts %}
+<section>
+    <h2>
+        <i class="fas fa-history" aria-hidden="true" style="margin-right: 0.5rem;"></i>
+        Recent Attempts
+    </h2>
+    <div style="overflow-x: auto;">
+        <table>
+            <thead>
+            <tr>
+                <th><i class="fas fa-user" aria-hidden="true" style="margin-right: 0.5rem;"></i>Student</th>
+                <th><i class="fas fa-clipboard-list" aria-hidden="true" style="margin-right: 0.5rem;"></i>Assessment</th>
+                <th><i class="fas fa-info-circle" aria-hidden="true" style="margin-right: 0.5rem;"></i>Status</th>
+                <th><i class="fas fa-star" aria-hidden="true" style="margin-right: 0.5rem;"></i>Score</th>
+                <th><i class="fas fa-percentage" aria-hidden="true" style="margin-right: 0.5rem;"></i>WER</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for attempt in attempts %}
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-user-circle" style="color: var(--text-muted);"></i>
+                            <span>{{ attempt.student.username }}</span>
+                        </div>
+                    </td>
+                    <td>{{ attempt.assessment.title }}</td>
+                    <td>
+                        <span class="status-badge {% if attempt.status == 'completed' %}completed{% elif attempt.status == 'in_progress' %}in-progress{% else %}pending{% endif %}">
+                            {% if attempt.status == 'completed' %}
+                                <i class="fas fa-check-circle" aria-hidden="true"></i>
+                            {% elif attempt.status == 'in_progress' %}
+                                <i class="fas fa-spinner" aria-hidden="true"></i>
+                            {% else %}
+                                <i class="fas fa-clock" aria-hidden="true"></i>
+                            {% endif %}
+                            {{ attempt.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if attempt.overall_score %}
+                            <strong style="color: var(--success);">{{ attempt.overall_score|floatformat:1 }}%</strong>
+                        {% else %}
+                            <span class="muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if attempt.overall_wer %}
+                            <span>{{ attempt.overall_wer|floatformat:2 }}%</span>
+                        {% else %}
+                            <span class="muted">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% else %}
+<section>
+    <div style="text-align: center; padding: 3rem 2rem; background: var(--bg-card); border-radius: var(--border-radius-lg); border: 1px solid var(--border-color);">
+        <i class="fas fa-inbox" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem; opacity: 0.5;"></i>
+        <h2 style="color: var(--text-secondary); margin-bottom: 0.5rem;">No Attempts Yet</h2>
+        <p class="muted">Student attempts will appear here once they start assessments.</p>
+    </div>
+</section>
+{% endif %}
 {% endblock %}
 
