@@ -46,9 +46,14 @@ class ASREngine:
             text = "Transcription unavailable during development."
             confidence = 0.0
         else:
-            result = self._pipeline(str(audio_path))
-            text = result.get("text", "")
-            confidence = result.get("score", 0.0)
+            try:
+                result = self._pipeline(str(audio_path))
+                text = result.get("text", "")
+                confidence = result.get("score", 0.0)
+            except Exception as exc:  # pragma: no cover - runtime safety
+                logger.error("ASR pipeline failed, falling back to empty transcription: %s", exc)
+                text = ""
+                confidence = 0.0
         return {
             "text": text.strip(),
             "confidence": confidence,
