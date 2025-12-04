@@ -344,6 +344,11 @@ var KeyboardFirstInterface = (() => {
             e.preventDefault();
             startVoiceListening();
         }
+        // F - Finalize/Submit assessment
+        else if (e.key === 'F' || e.key === 'f') {
+            e.preventDefault();
+            submitAssessment();
+        }
         // H - Help
         else if (e.key === 'H' || e.key === 'h') {
             e.preventDefault();
@@ -353,7 +358,7 @@ var KeyboardFirstInterface = (() => {
                 alert('Speech synthesis is not supported in this browser.');
                 return;
             }
-            speak('Keyboard shortcuts: Q to hear question, N for next, P for previous, R to record answer, S to stop recording, Enter to submit, number keys 1-9 to jump to question, C for question count, V for voice commands, Escape to stop speaking.');
+            speak('Keyboard shortcuts: Q to hear question, N for next, P for previous, R to record answer, S to stop recording, Enter to submit answer, F to finalize assessment, number keys 1-9 to jump to question, C for question count, V for voice commands, Escape to stop speaking.');
         }
     };
 
@@ -571,6 +576,37 @@ var KeyboardFirstInterface = (() => {
         } else {
             speak('Could not find answer form.');
         }
+    };
+
+    const submitAssessment = () => {
+        // Find the submit assessment form
+        const submitForm = document.querySelector('form[action*="submit"]');
+        if (!submitForm) {
+            speak('Submit assessment form not found. Make sure you have answered all questions.');
+            return;
+        }
+
+        speak('Finalizing and submitting your assessment. Please wait.');
+        
+        const formData = new FormData(submitForm);
+        fetch(submitForm.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': getCsrfToken()
+            }
+        }).then((response) => {
+            if (response.ok) {
+                speak('Assessment submitted successfully! You will be redirected to your dashboard.');
+                setTimeout(() => {
+                    window.location.href = '/assessments/student/dashboard/';
+                }, 2000);
+            } else {
+                speak('Error submitting assessment. Please try again.');
+            }
+        }).catch(() => {
+            speak('Error submitting assessment. Please try again.');
+        });
     };
 
     // Get CSRF token

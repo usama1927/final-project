@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.views import View
 from django.views.generic import ListView, TemplateView
 
@@ -133,6 +134,42 @@ class StudentAssessmentView(StudentRequiredMixin, TemplateView):
         else:
             messages.error(request, "Please fix the errors before submitting.")
         return redirect(request.path)
+
+
+class StudentAssessmentSubmitView(StudentRequiredMixin, View):
+    """View to finalize and submit an assessment attempt."""
+    
+    def post(self, request, *args, **kwargs):
+        attempt = get_object_or_404(
+            Attempt,
+            pk=kwargs["attempt_id"],
+            student=request.user,
+            status=Attempt.Status.IN_PROGRESS,
+        )
+        
+        # Mark attempt as completed
+        attempt.status = Attempt.Status.COMPLETED
+        attempt.completed_at = timezone.now()
+        
+        # Calculate final metrics if not already set
+        responses = attempt.responses.exclude(score__isnull=True)
+        if responses.exists():
+            attempt.overall_score = sum(r.score for r in responses) / responses.count()
+            attempt.overall_wer = sum(r.wer or 0 for r in responses) / responses.count()
+        
+        attempt.save()
+        
+        messages.success(
+            request,
+            f"Assessment '{attempt.assessment.title}' submitted successfully! "
+            f"Your score: {attempt.overall_score:.1f}%"
+        )
+        
+        logger.info(
+            f"Assessment attempt {attempt.id} completed by student {request.user.username}"
+        )
+        
+        return redirect("student-dashboard")
 
 
 class TeacherDashboardView(TeacherRequiredMixin, TemplateView):

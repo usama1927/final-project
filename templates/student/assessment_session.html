@@ -17,7 +17,7 @@
         <details style="margin-top: 2rem; padding: 1.5rem; background: var(--bg-card); border-radius: var(--border-radius-lg); border: 1px solid var(--border-color); max-width: 700px; margin-left: auto; margin-right: auto;">
             <summary style="cursor: pointer; font-weight: 600; color: var(--text-primary); margin-bottom: 1rem;">
                 <i class="fas fa-keyboard" aria-hidden="true" style="margin-right: 0.5rem;"></i>
-                Keyboard Shortcuts
+                Keyboard Shortcuts (Press H to hear)
             </summary>
             <div style="text-align: left; color: var(--text-secondary); line-height: 2; margin-top: 1rem;">
                 <p style="margin: 0.5rem 0;"><strong>Q</strong> - Listen to current question</p>
@@ -27,6 +27,7 @@
                 <p style="margin: 0.5rem 0;"><strong>R</strong> - Start recording answer</p>
                 <p style="margin: 0.5rem 0;"><strong>S</strong> - Stop recording</p>
                 <p style="margin: 0.5rem 0;"><strong>Enter</strong> - Submit answer</p>
+                <p style="margin: 0.5rem 0;"><strong>F</strong> - Finalize and submit assessment</p>
                 <p style="margin: 0.5rem 0;"><strong>C</strong> - Question count</p>
                 <p style="margin: 0.5rem 0;"><strong>V</strong> - Voice commands (optional)</p>
                 <p style="margin: 0.5rem 0;"><strong>H</strong> - Help (hear all shortcuts)</p>
@@ -37,7 +38,19 @@
     
     <div data-audio-status aria-live="assertive" style="margin-top: 1rem; padding: 1rem; background: var(--bg-card); border-radius: var(--border-radius); border: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem; text-align: center; justify-content: center;">
         <i class="fas fa-info-circle" style="color: var(--info);"></i>
-        <span>Ready. Use keyboard shortcuts or buttons below to interact.</span>
+        <span>Ready. Press H for help, or use keyboard shortcuts to navigate.</span>
+    </div>
+    
+    <!-- Hidden audio controls for keyboard-first interface -->
+    <div class="audio-controls" role="group" aria-label="Audio controls" style="display: none;">
+        <button type="button" data-audio-control="start" class="contrast">
+            <i class="fas fa-circle" aria-hidden="true"></i>
+            <span>Start Recording</span>
+        </button>
+        <button type="button" data-audio-control="stop" class="secondary">
+            <i class="fas fa-stop" aria-hidden="true"></i>
+            <span>Stop Recording</span>
+        </button>
     </div>
 </section>
 
@@ -48,55 +61,50 @@
     </h2>
     
     {% for response, form in response_forms %}
-        <div 
+        <article 
             class="assessment-card"
             data-question-item
             data-asr-endpoint="{% url 'api-audio-upload' attempt.id response.question.id %}"
             data-csrf="{{ csrf_token }}"
             tabindex="0"
+            aria-labelledby="question-{{ response.question.id }}-heading"
             style="margin-bottom: 2rem;">
             
-            <div style="display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.5rem;">
-                <div style="flex-shrink: 0; width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 1.2rem;">
-                    {{ forloop.counter }}
-                </div>
-                <div style="flex: 1;">
-                    <h3 style="margin: 0 0 0.5rem; color: var(--text-primary);">
-                        <span data-question-text>{{ response.question.text }}</span>
-                    </h3>
-                </div>
-            </div>
+            <header style="margin-bottom: 1.5rem;">
+                <h3 id="question-{{ response.question.id }}-heading" style="margin: 0 0 0.5rem; color: var(--text-primary); display: flex; align-items: flex-start; gap: 1rem;">
+                    <span style="flex-shrink: 0; width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 1.2rem;">
+                        {{ forloop.counter }}
+                    </span>
+                    <span data-question-text style="flex: 1; padding-top: 0.5rem;">{{ response.question.text }}</span>
+                </h3>
+            </header>
             
             <form method="post" data-question-form action="{% url 'student-assessment' assessment.pk %}" style="margin-top: 1.5rem;">
                 {% csrf_token %}
                 <input type="hidden" name="question_id" value="{{ response.question.id }}">
                 
                 <label style="display: block; margin-bottom: 0.75rem; font-weight: 600; color: var(--text-primary);">
-                    <i class="fas fa-microphone-alt" aria-hidden="true" style="margin-right: 0.5rem;"></i>
-                    Your Answer
+                    <span class="sr-only">Your answer for question {{ forloop.counter }}</span>
+                    <span aria-hidden="true" style="display: block; margin-bottom: 0.5rem;">
+                        <i class="fas fa-microphone-alt" aria-hidden="true" style="margin-right: 0.5rem;"></i>
+                        Your Answer
+                    </span>
                     {{ form.transcription }}
+                    <small class="muted" style="display: block; margin-top: 0.5rem; font-size: 0.9rem;">
+                        Press R to record, S to stop, Enter (when not typing) to submit. Or type your answer directly.
+                    </small>
                 </label>
                 
-                <div class="audio-controls" role="group" aria-label="Audio controls" style="margin-top: 1rem;">
-                    <button type="button" data-audio-control="start" class="contrast">
-                        <i class="fas fa-circle" aria-hidden="true"></i>
-                        <span>Start Recording</span>
-                    </button>
-                    <button type="button" data-audio-control="stop" class="secondary">
-                        <i class="fas fa-stop" aria-hidden="true"></i>
-                        <span>Stop Recording</span>
-                    </button>
-                    <button type="submit" class="contrast" style="margin-left: auto;">
-                        <i class="fas fa-paper-plane" aria-hidden="true"></i>
-                        <span>Submit Answer</span>
-                    </button>
-                </div>
+                <!-- Screen reader accessible submit button - visually hidden but accessible via screen reader and keyboard -->
+                <button type="submit" class="sr-only" aria-label="Submit answer for question {{ forloop.counter }}">
+                    Submit
+                </button>
                 
                 {% if response.transcription %}
-                <div style="margin-top: 1rem; padding: 1rem; background: rgba(16, 185, 129, 0.1); border-left: 4px solid var(--success); border-radius: var(--border-radius);">
+                <div style="margin-top: 1rem; padding: 1rem; background: rgba(16, 185, 129, 0.1); border-left: 4px solid var(--success); border-radius: var(--border-radius);" role="status" aria-live="polite">
                     <p style="margin: 0; color: var(--success); font-weight: 600;">
                         <i class="fas fa-check-circle" aria-hidden="true" style="margin-right: 0.5rem;"></i>
-                        Answer submitted
+                        <span>Answer submitted</span>
                     </p>
                     {% if response.transcription_confidence %}
                     <p style="margin: 0.5rem 0 0; color: var(--text-secondary); font-size: 0.9rem;">
@@ -106,7 +114,7 @@
                 </div>
                 {% endif %}
             </form>
-        </div>
+        </article>
     {% empty %}
         <div style="text-align: center; padding: 3rem 2rem; background: var(--bg-card); border-radius: var(--border-radius-lg); border: 1px solid var(--border-color);">
             <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem; opacity: 0.5;" aria-hidden="true"></i>
@@ -114,6 +122,30 @@
             <p class="muted">This assessment doesn't have any questions yet.</p>
         </div>
     {% endfor %}
+    
+    <!-- Submit Assessment Section -->
+    {% if response_forms %}
+    <section style="margin-top: 3rem; padding: 2rem; background: var(--bg-card); border-radius: var(--border-radius-lg); border: 2px solid var(--primary); text-align: center;">
+        <h2 style="margin: 0 0 1rem; color: var(--text-primary);">
+            <i class="fas fa-check-circle" aria-hidden="true" style="margin-right: 0.5rem;"></i>
+            Complete Assessment
+        </h2>
+        <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+            Once you've answered all questions, click below to finalize and submit your assessment.
+        </p>
+        <form method="post" action="{% url 'student-assessment-submit' attempt.id %}" style="display: inline-block;">
+            {% csrf_token %}
+            <button type="submit" class="contrast" style="padding: 1rem 2rem; font-size: 1.1rem; min-width: 200px;">
+                <i class="fas fa-paper-plane" aria-hidden="true" style="margin-right: 0.5rem;"></i>
+                Submit Assessment
+            </button>
+        </form>
+        <p class="muted" style="margin-top: 1rem; font-size: 0.9rem;">
+            <i class="fas fa-info-circle" aria-hidden="true" style="margin-right: 0.5rem;"></i>
+            You can still edit answers before submitting
+        </p>
+    </section>
+    {% endif %}
 </section>
 {% endblock %}
 
