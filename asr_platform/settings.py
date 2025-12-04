@@ -164,8 +164,16 @@ LOGIN_URL = "/login/"
 LOGIN_REDIRECT_URL = "/student/dashboard/"
 LOGOUT_REDIRECT_URL = "/login/"
 
+# OpenAI API (optional, for LLM feedback generation only)
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-ASR_MODEL_NAME = os.environ.get("ASR_MODEL_NAME", "openai/whisper-small")
+
+# ASR Model Configuration
+# Default: Wav2Vec2 (facebook/wav2vec2-base-960h)
+# This is the recommended model for fine-tuning and CPU-optimized training
+# Can be overridden with environment variable: ASR_MODEL_NAME
+ASR_MODEL_NAME = os.environ.get("ASR_MODEL_NAME", "facebook/wav2vec2-base-960h")
+
+# NLP Model for Semantic Scoring
 NLP_MODEL_NAME = os.environ.get("NLP_MODEL_NAME", "sentence-transformers/all-MiniLM-L6-v2")
 
 LOGGING = {

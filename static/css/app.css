@@ -567,3 +567,75 @@ details[open] summary {
     padding-bottom: 0.75rem;
 }
 
+/* Accessible Interface Enhancements */
+[data-accessible-dashboard] button,
+[data-accessible-assessment] button {
+    min-height: 80px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    padding: 1.5rem 2rem;
+    border: 3px solid transparent;
+    box-shadow: var(--shadow-lg);
+    transition: all 0.2s ease;
+}
+
+[data-accessible-dashboard] button:focus,
+[data-accessible-assessment] button:focus {
+    outline: 4px solid var(--focus-color);
+    outline-offset: 4px;
+    border-color: var(--primary);
+    transform: scale(1.02);
+}
+
+[data-accessible-dashboard] button:active,
+[data-accessible-assessment] button:active {
+    transform: scale(0.98);
+}
+
+[data-accessible-dashboard] button:hover,
+[data-accessible-assessment] button:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-xl);
+}
+
+/* Large touch targets for mobile/tablet */
+@media (max-width: 768px) {
+    [data-accessible-dashboard] button,
+    [data-accessible-assessment] button {
+        min-height: 100px;
+        font-size: 1.3rem;
+        padding: 2rem;
+        width: 100%;
+    }
+}
+
+/* Question items focus states */
+[data-question-item]:focus {
+    outline: 4px solid var(--primary);
+    outline-offset: 8px;
+    border-color: var(--primary);
+    transform: scale(1.01);
+}
+
+[data-question-item] {
+    transition: all 0.2s ease;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    [data-accessible-dashboard] button,
+    [data-accessible-assessment] button {
+        border-width: 4px;
+        font-weight: 700;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    [data-accessible-dashboard] button,
+    [data-accessible-assessment] button,
+    [data-question-item] {
+        transition: none;
+    }
+}
+

@@ -11,8 +11,11 @@ logger = logging.getLogger(__name__)
 
 class ASREngine:
     """
-    Thin wrapper around a Whisper / Wav2Vec2 pipeline.
-    Falls back to a mock transcription when GPU resources are unavailable.
+    Wav2Vec2-based ASR engine for speech recognition.
+    
+    Uses Wav2Vec2 models (default: facebook/wav2vec2-base-960h) for transcription.
+    Supports fine-tuned models and LoRA-adapted models for domain-specific adaptation.
+    Falls back to a mock transcription when model resources are unavailable.
     """
 
     def __init__(

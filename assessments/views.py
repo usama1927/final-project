@@ -1,3 +1,4 @@
+import logging
 from typing import Any
 
 from django.conf import settings
@@ -11,6 +12,8 @@ from django.views.generic import ListView, TemplateView
 from .forms import AssessmentForm, QuestionFormSet, ResponseForm
 from .models import Assessment, Attempt, Response
 from .services import evaluate_transcription
+
+logger = logging.getLogger(__name__)
 
 
 class StudentRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
@@ -40,14 +43,33 @@ class StudentAssessmentView(StudentRequiredMixin, TemplateView):
         return super().dispatch(request, *args, **kwargs)
 
     def _get_or_create_attempt(self, user):
-        attempt, _ = Attempt.objects.get_or_create(
+        attempt, created = Attempt.objects.get_or_create(
             assessment=self.assessment,
             student=user,
             status=Attempt.Status.IN_PROGRESS,
             defaults={"model_version": settings.ASR_MODEL_NAME},
         )
-        for question in self.assessment.questions.all():
-            Response.objects.get_or_create(attempt=attempt, question=question)
+        
+        # Always ensure responses exist for all current questions
+        # This handles cases where questions were added after attempt creation
+        questions = self.assessment.questions.all()
+        if not questions.exists():
+            logger.warning(
+                f"Assessment '{self.assessment.title}' (ID: {self.assessment.id}) "
+                f"has no questions. Teacher: {self.assessment.teacher.username}"
+            )
+        else:
+            # Use get_or_create to ensure all questions have responses
+            # This is safe even if responses already exist
+            for question in questions:
+                Response.objects.get_or_create(
+                    attempt=attempt,
+                    question=question
+                )
+            logger.info(
+                f"Ensured {questions.count()} response(s) exist for attempt {attempt.id}"
+            )
+        
         return attempt
 
     def get_context_data(self, **kwargs):
@@ -59,11 +81,41 @@ class StudentAssessmentView(StudentRequiredMixin, TemplateView):
         response_forms = [
             (response, ResponseForm(instance=response)) for response in responses
         ]
+        
+        # Check if assessment has questions
+        question_count = self.assessment.questions.count()
+        response_count = responses.count()
+        
+        # Debug logging
+        logger.info(
+            f"Assessment '{self.assessment.title}' (ID: {self.assessment.id}): "
+            f"{question_count} question(s) in assessment, "
+            f"{response_count} response(s) in attempt {self.attempt.id}"
+        )
+        
+        if question_count == 0:
+            messages.warning(
+                self.request,
+                f"This assessment '{self.assessment.title}' has no questions. "
+                "Please contact your teacher to add questions."
+            )
+        elif response_count == 0 and question_count > 0:
+            # This shouldn't happen with our fix, but log it if it does
+            logger.error(
+                f"Attempt {self.attempt.id} has no responses but assessment has "
+                f"{question_count} questions. This indicates a bug."
+            )
+            messages.error(
+                self.request,
+                "An error occurred loading questions. Please refresh the page."
+            )
+        
         context.update(
             {
                 "assessment": self.assessment,
                 "attempt": self.attempt,
                 "response_forms": response_forms,
+                "question_count": question_count,
             }
         )
         return context

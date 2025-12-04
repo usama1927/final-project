@@ -24,7 +24,15 @@ const AudioModule = (() => {
     };
 
     const handleAction = async (event) => {
-        const action = event.currentTarget.dataset.audioControl;
+        const button = event.currentTarget;
+        const action = button.dataset.audioControl;
+        
+        // Set endpoint based on the button's parent question card
+        const questionCard = button.closest('[data-asr-endpoint]');
+        if (questionCard) {
+            setEndpoint(questionCard);
+        }
+        
         if (action === 'start') {
             await startRecording();
         } else if (action === 'stop') {
@@ -87,7 +95,10 @@ const AudioModule = (() => {
     const setEndpoint = (element) => {
         if (element?.dataset.asrEndpoint) {
             activeEndpoint = element;
-            activeTextarea = element.querySelector('textarea');
+            // Find textarea - could be in form or directly in element
+            activeTextarea = element.querySelector('textarea') || 
+                           element.querySelector('form textarea') ||
+                           element.querySelector('[data-question-form] textarea');
         }
     };
 
@@ -111,6 +122,9 @@ const AudioModule = (() => {
 
     return {
         init,
+        setEndpoint,
+        startRecording,
+        stopRecording
     };
 })();
 

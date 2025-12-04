@@ -1,114 +1,115 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}{{ assessment.title }} | Assessment{% endblock %}
 {% block content %}
-<section style="margin-bottom: 2.5rem;">
-    <div style="display: flex; align-items: start; gap: 1.5rem; margin-bottom: 2rem; flex-wrap: wrap;">
-        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md); flex-shrink: 0;">
-            <i class="fas fa-microphone-alt" style="font-size: 1.75rem; color: white;"></i>
+<section data-keyboard-assessment style="margin-bottom: 2.5rem;">
+    <div style="text-align: center; padding: 2rem;">
+        <h1 data-assessment-title style="margin: 0 0 2rem; font-size: 2rem;">{{ assessment.title }}</h1>
+        
+        {% if assessment.instructions %}
+        <div style="margin-bottom: 2rem; padding: 1.5rem; background: var(--bg-card); border-radius: var(--border-radius-lg); border: 1px solid var(--border-color); max-width: 800px; margin-left: auto; margin-right: auto;">
+            <p style="margin: 0; color: var(--text-secondary); line-height: 1.8; font-size: 1rem;">
+                {{ assessment.instructions }}
+            </p>
         </div>
-        <div style="flex: 1;">
-            <h1 style="margin: 0 0 0.5rem;">{{ assessment.title }}</h1>
-            <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
-                <span style="display: inline-flex; align-items: center; gap: 0.375rem; color: var(--text-muted);">
-                    <i class="fas fa-book" aria-hidden="true"></i>
-                    {{ assessment.subject }}
-                </span>
-                <span style="display: inline-flex; align-items: center; gap: 0.375rem; color: var(--text-muted);">
-                    <i class="fas fa-question-circle" aria-hidden="true"></i>
-                    {{ response_forms|length }} question{{ response_forms|length|pluralize }}
-                </span>
+        {% endif %}
+        
+        <details style="margin-top: 2rem; padding: 1.5rem; background: var(--bg-card); border-radius: var(--border-radius-lg); border: 1px solid var(--border-color); max-width: 700px; margin-left: auto; margin-right: auto;">
+            <summary style="cursor: pointer; font-weight: 600; color: var(--text-primary); margin-bottom: 1rem;">
+                <i class="fas fa-keyboard" aria-hidden="true" style="margin-right: 0.5rem;"></i>
+                Keyboard Shortcuts
+            </summary>
+            <div style="text-align: left; color: var(--text-secondary); line-height: 2; margin-top: 1rem;">
+                <p style="margin: 0.5rem 0;"><strong>Q</strong> - Listen to current question</p>
+                <p style="margin: 0.5rem 0;"><strong>N</strong> - Next question</p>
+                <p style="margin: 0.5rem 0;"><strong>P</strong> - Previous question</p>
+                <p style="margin: 0.5rem 0;"><strong>1-9</strong> - Jump to question number</p>
+                <p style="margin: 0.5rem 0;"><strong>R</strong> - Start recording answer</p>
+                <p style="margin: 0.5rem 0;"><strong>S</strong> - Stop recording</p>
+                <p style="margin: 0.5rem 0;"><strong>Enter</strong> - Submit answer</p>
+                <p style="margin: 0.5rem 0;"><strong>C</strong> - Question count</p>
+                <p style="margin: 0.5rem 0;"><strong>V</strong> - Voice commands (optional)</p>
+                <p style="margin: 0.5rem 0;"><strong>H</strong> - Help (hear all shortcuts)</p>
+                <p style="margin: 0.5rem 0;"><strong>Escape</strong> - Stop speaking</p>
             </div>
-            {% if assessment.instructions %}
-                <p style="color: var(--text-secondary); line-height: 1.6;">{{ assessment.instructions }}</p>
-            {% endif %}
-        </div>
+        </details>
     </div>
     
-    <div class="audio-controls" role="group" aria-label="Audio controls">
-        <button data-audio-control="start" class="contrast">
-            <i class="fas fa-circle" aria-hidden="true"></i>
-            <span>Start Recording</span>
-        </button>
-        <button data-audio-control="stop" class="secondary">
-            <i class="fas fa-stop" aria-hidden="true"></i>
-            <span>Stop Recording</span>
-        </button>
-        <button data-audio-control="repeat" class="secondary">
-            <i class="fas fa-redo" aria-hidden="true"></i>
-            <span>Repeat</span>
-        </button>
-        <button data-audio-control="next" class="secondary">
-            <i class="fas fa-arrow-right" aria-hidden="true"></i>
-            <span>Next</span>
-        </button>
-        <button data-audio-control="help" class="secondary">
-            <i class="fas fa-question-circle" aria-hidden="true"></i>
-            <span>Help</span>
-        </button>
-    </div>
-    <div data-audio-status aria-live="assertive" style="margin-top: 1rem; padding: 1rem; background: var(--bg-card); border-radius: var(--border-radius); border: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem;">
+    <div data-audio-status aria-live="assertive" style="margin-top: 1rem; padding: 1rem; background: var(--bg-card); border-radius: var(--border-radius); border: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem; text-align: center; justify-content: center;">
         <i class="fas fa-info-circle" style="color: var(--info);"></i>
-        <span>Use the buttons or keyboard shortcuts for full audio navigation.</span>
+        <span>Ready. Use keyboard shortcuts or buttons below to interact.</span>
     </div>
 </section>
 
 <section aria-labelledby="questions-heading">
-    <h2 id="questions-heading">
+    <h2 id="questions-heading" style="margin-bottom: 2rem;">
         <i class="fas fa-list-ol" aria-hidden="true" style="margin-right: 0.5rem;"></i>
         Questions
     </h2>
+    
     {% for response, form in response_forms %}
-        <article class="assessment-card"
-                 data-asr-endpoint="{% url 'api-audio-upload' attempt.id response.question.id %}"
-                 data-csrf="{{ csrf_token }}">
-            <div style="display: flex; align-items: start; gap: 1rem; margin-bottom: 1.5rem;">
-                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                    <span style="color: white; font-weight: 700; font-size: 1.25rem;">{{ forloop.counter }}</span>
+        <div 
+            class="assessment-card"
+            data-question-item
+            data-asr-endpoint="{% url 'api-audio-upload' attempt.id response.question.id %}"
+            data-csrf="{{ csrf_token }}"
+            tabindex="0"
+            style="margin-bottom: 2rem;">
+            
+            <div style="display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.5rem;">
+                <div style="flex-shrink: 0; width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 1.2rem;">
+                    {{ forloop.counter }}
                 </div>
                 <div style="flex: 1;">
-                    <h3 style="margin: 0 0 0.75rem;">Question {{ forloop.counter }}</h3>
-                    <p style="color: var(--text-secondary); line-height: 1.7; font-size: 1.05rem; margin: 0;">{{ response.question.text }}</p>
+                    <h3 style="margin: 0 0 0.5rem; color: var(--text-primary);">
+                        <span data-question-text>{{ response.question.text }}</span>
+                    </h3>
                 </div>
             </div>
             
-            <form method="post" aria-label="Answer question {{ forloop.counter }}" style="margin-top: 1.5rem;">
+            <form method="post" data-question-form action="{% url 'student-assessment' assessment.pk %}" style="margin-top: 1.5rem;">
                 {% csrf_token %}
                 <input type="hidden" name="question_id" value="{{ response.question.id }}">
-                <label style="display: block; margin-bottom: 1rem;">
-                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                        <i class="fas fa-keyboard" aria-hidden="true" style="color: var(--text-muted);"></i>
-                        <span>Your Response</span>
-                        <small class="muted" style="margin-left: auto;">(Auto-transcribed from audio or type manually)</small>
-                    </div>
+                
+                <label style="display: block; margin-bottom: 0.75rem; font-weight: 600; color: var(--text-primary);">
+                    <i class="fas fa-microphone-alt" aria-hidden="true" style="margin-right: 0.5rem;"></i>
+                    Your Answer
                     {{ form.transcription }}
                 </label>
-                <button type="submit" class="contrast" style="width: 100%;">
-                    <i class="fas fa-paper-plane" aria-hidden="true"></i>
-                    <span>Submit Answer</span>
-                </button>
-            </form>
-            
-            {% if response.feedback_text %}
-                <div style="margin-top: 1.5rem; padding: 1.25rem; background: rgba(59, 130, 246, 0.1); border-left: 4px solid var(--info); border-radius: var(--border-radius);">
-                    <div style="display: flex; align-items: start; gap: 0.75rem;">
-                        <i class="fas fa-comment-dots" style="color: var(--info); margin-top: 0.25rem;"></i>
-                        <div style="flex: 1;">
-                            <strong style="display: block; margin-bottom: 0.5rem; color: var(--text-primary);">
-                                <i class="fas fa-star" aria-hidden="true" style="margin-right: 0.5rem;"></i>
-                                Feedback
-                                {% if response.score is not None %}
-                                    <span style="margin-left: 1rem; color: var(--success);">Score: {{ response.score|floatformat:1 }}%</span>
-                                {% endif %}
-                            </strong>
-                            <p style="color: var(--text-secondary); margin: 0; line-height: 1.6;">{{ response.feedback_text }}</p>
-                        </div>
-                    </div>
+                
+                <div class="audio-controls" role="group" aria-label="Audio controls" style="margin-top: 1rem;">
+                    <button type="button" data-audio-control="start" class="contrast">
+                        <i class="fas fa-circle" aria-hidden="true"></i>
+                        <span>Start Recording</span>
+                    </button>
+                    <button type="button" data-audio-control="stop" class="secondary">
+                        <i class="fas fa-stop" aria-hidden="true"></i>
+                        <span>Stop Recording</span>
+                    </button>
+                    <button type="submit" class="contrast" style="margin-left: auto;">
+                        <i class="fas fa-paper-plane" aria-hidden="true"></i>
+                        <span>Submit Answer</span>
+                    </button>
                 </div>
-            {% endif %}
-        </article>
+                
+                {% if response.transcription %}
+                <div style="margin-top: 1rem; padding: 1rem; background: rgba(16, 185, 129, 0.1); border-left: 4px solid var(--success); border-radius: var(--border-radius);">
+                    <p style="margin: 0; color: var(--success); font-weight: 600;">
+                        <i class="fas fa-check-circle" aria-hidden="true" style="margin-right: 0.5rem;"></i>
+                        Answer submitted
+                    </p>
+                    {% if response.transcription_confidence %}
+                    <p style="margin: 0.5rem 0 0; color: var(--text-secondary); font-size: 0.9rem;">
+                        Confidence: {{ response.transcription_confidence|floatformat:0 }}%
+                    </p>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </form>
+        </div>
     {% empty %}
         <div style="text-align: center; padding: 3rem 2rem; background: var(--bg-card); border-radius: var(--border-radius-lg); border: 1px solid var(--border-color);">
-            <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem; opacity: 0.5;"></i>
+            <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem; opacity: 0.5;" aria-hidden="true"></i>
             <h2 style="color: var(--text-secondary); margin-bottom: 0.5rem;">No Questions Found</h2>
             <p class="muted">This assessment doesn't have any questions yet.</p>
         </div>

@@ -1,57 +1,36 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Student Dashboard{% endblock %}
 {% block content %}
-<section aria-labelledby="available-assessments">
-    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
-        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md);">
-            <i class="fas fa-graduation-cap" style="font-size: 1.75rem; color: white;"></i>
-        </div>
-        <div>
-            <h1 id="available-assessments" style="margin: 0;">My Assessments</h1>
-            <p class="muted" style="margin: 0.25rem 0 0;">Available assessments for completion</p>
+<section aria-labelledby="available-assessments" data-keyboard-dashboard>
+    <div style="text-align: center; padding: 3rem 2rem;">
+        <h1 id="available-assessments" style="margin: 0 0 2rem; font-size: 2rem;">My Assessments</h1>
+        
+        <div style="margin-top: 2rem; padding: 2rem; background: var(--bg-card); border-radius: var(--border-radius-lg); border: 1px solid var(--border-color); max-width: 700px; margin-left: auto; margin-right: auto;">
+            <p style="margin: 0 0 1.5rem; color: var(--text-primary); line-height: 1.8; font-size: 1.1rem;">
+                <strong>Keyboard Navigation:</strong>
+            </p>
+            <div style="text-align: left; color: var(--text-secondary); line-height: 2;">
+                <p style="margin: 0.5rem 0;"><strong>L</strong> - List all assessments</p>
+                <p style="margin: 0.5rem 0;"><strong>1-9</strong> - Open assessment by number</p>
+                <p style="margin: 0.5rem 0;"><strong>V</strong> - Voice commands (optional)</p>
+                <p style="margin: 0.5rem 0;"><strong>H</strong> - Help (hear all shortcuts)</p>
+                <p style="margin: 0.5rem 0;"><strong>Escape</strong> - Stop speaking</p>
+            </div>
         </div>
     </div>
     
+    <!-- Hidden assessment data for keyboard/voice interface -->
     {% if assessments %}
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem;">
-            {% for assessment in assessments %}
-                <article class="assessment-card">
-                    <div style="display: flex; align-items: start; gap: 1rem; margin-bottom: 1rem;">
-                        <div style="width: 48px; height: 48px; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                            <i class="fas fa-clipboard-list" style="color: white; font-size: 1.25rem;"></i>
-                        </div>
-                        <div style="flex: 1;">
-                            <h2 style="margin: 0 0 0.5rem; font-size: 1.5rem;">{{ assessment.title }}</h2>
-                            <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
-                                <span style="display: inline-flex; align-items: center; gap: 0.375rem; color: var(--text-muted); font-size: 0.875rem;">
-                                    <i class="fas fa-book" aria-hidden="true"></i>
-                                    {{ assessment.subject }}
-                                </span>
-                                <span style="display: inline-flex; align-items: center; gap: 0.375rem; color: var(--text-muted); font-size: 0.875rem;">
-                                    <i class="fas fa-language" aria-hidden="true"></i>
-                                    {{ assessment.language|upper }}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.5rem;">
-                        {{ assessment.instructions|default:"Complete this assessment using voice responses."|truncatewords:30 }}
-                    </p>
-                    <footer style="margin-top: auto;">
-                        <a class="contrast" href="{% url 'student-assessment' assessment.pk %}" style="width: 100%; justify-content: center;">
-                            <i class="fas fa-play" aria-hidden="true"></i>
-                            <span>Start / Continue Assessment</span>
-                        </a>
-                    </footer>
-                </article>
-            {% endfor %}
-        </div>
+        {% for assessment in assessments %}
+            <div data-assessment-item style="position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden;" aria-hidden="true">
+                <span data-assessment-title>{{ assessment.title }}</span>
+                <span data-assessment-subject>{{ assessment.subject }}</span>
+                <a data-assessment-link href="{% url 'student-assessment' assessment.pk %}"></a>
+            </div>
+        {% endfor %}
     {% else %}
-        <div style="text-align: center; padding: 4rem 2rem; background: var(--bg-card); border-radius: var(--border-radius-lg); border: 1px solid var(--border-color);">
-            <i class="fas fa-inbox" style="font-size: 4rem; color: var(--text-muted); margin-bottom: 1.5rem; opacity: 0.5;"></i>
-            <h2 style="color: var(--text-secondary); margin-bottom: 0.5rem;">No Assessments Available</h2>
-            <p class="muted">Check back later for new assessments.</p>
-        </div>
+        <div data-no-assessments style="position: absolute; left: -9999px;" aria-hidden="true">No assessments available</div>
     {% endif %}
 </section>
 {% endblock %}
