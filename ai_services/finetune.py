@@ -196,13 +196,28 @@ class LibriSpeechFineTuner:
             )
             
             # Process labels (text transcription)
-            with processor.as_target_processor():
-                labels = processor(example["text"]).input_ids
+            # Use tokenizer directly for text encoding
+            labels = processor.tokenizer(
+                example["text"],
+                return_tensors="pt",
+                padding=False,  # Don't pad here, will pad in collator
+            ).input_ids
             
             # Convert to list for dataset compatibility
+            # labels is a tensor with shape [1, seq_len]
+            if isinstance(labels, torch.Tensor):
+                # Squeeze batch dimension and convert to list
+                labels_list = labels.squeeze(0).tolist()
+            elif isinstance(labels, list):
+                # If already a list, flatten if nested
+                labels_list = labels[0] if len(labels) > 0 and isinstance(labels[0], list) else labels
+            else:
+                # Fallback: convert to list
+                labels_list = list(labels) if hasattr(labels, '__iter__') else [int(labels)]
+            
             return {
                 "input_values": inputs.input_values[0].tolist(),
-                "labels": labels[0].tolist(),
+                "labels": labels_list,
             }
 
         logger.info("Preparing dataset for training...")
